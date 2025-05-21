@@ -9,7 +9,6 @@ export default function References() {
   return (
     <ApiReferenceReact
       configuration={{
-        theme: 'moon',
         url: 'https://petstore.swagger.io/v2/swagger.json',
       }}
     />
