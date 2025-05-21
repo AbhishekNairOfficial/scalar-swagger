@@ -1,0 +1,65 @@
+/* scalar-overrides.css */
+
+/* Host scalar component wrapper */
+scalar-api,
+scalar-theme-provider {
+  @apply block bg-white text-gray-800 font-sans;
+}
+
+/* Adjust headings */
+scalar-api h1,
+scalar-api h2,
+scalar-api h3 {
+  @apply text-gray-900 font-semibold;
+}
+
+scalar-api h1 {
+  @apply text-3xl mb-4;
+}
+
+scalar-api h2 {
+  @apply text-2xl mt-6 mb-2;
+}
+
+scalar-api h3 {
+  @apply text-xl mt-4 mb-1;
+}
+
+/* Links */
+scalar-api a {
+  @apply text-blue-600 underline hover:text-blue-800;
+}
+
+/* Tables */
+scalar-api table {
+  @apply table-auto w-full border border-gray-300;
+}
+
+scalar-api th {
+  @apply bg-gray-100 text-left p-2 border-b border-gray-300;
+}
+
+scalar-api td {
+  @apply p-2 border-b border-gray-200;
+}
+
+/* Code blocks */
+scalar-api pre,
+scalar-api code {
+  @apply bg-gray-100 text-sm text-gray-800 p-2 rounded;
+}
+
+/* Sidebar or navigation (if applicable) */
+scalar-api nav {
+  @apply bg-gray-50 p-4 border-r border-gray-200;
+}
+
+/* Override scalar default spacing and typography */
+scalar-api * {
+  @apply leading-relaxed;
+}
+
+/* Optional: override Scalar's dark mode */
+scalar-api[data-theme="dark"] {
+  @apply bg-gray-900 text-gray-100;
+}
