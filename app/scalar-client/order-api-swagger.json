@@ -1,0 +1,989 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+      "title": "T-Mobile Activation Order API",
+      "description": "This API supports activation orders. \n It enables the line activation for bring your own device, bring your own device with port-in, and ordering of full price devices. \n The details related to the partner will be picked from the session. No other partner details are needed except for the minimum set of attributes required for activation.",
+      "contact": {
+        "name": "T-Mobile.",
+        "url": "http://www.t-mobile.com",
+        "email": "support@t-mobile.com"
+      },
+      "license": {
+        "name": "T-Mobile Inc.",
+        "url": "http://www.t-mobile.com"
+      },
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "https://dev01.business.adn.t-mobile.com/partnerExperiences/v1"
+      }
+    ],
+    "paths": {
+      "/order": {
+        "post": {
+          "tags": [
+            "createOrder"
+          ],
+          "summary": "Create an activation order",
+          "operationId": "ord-activation-post",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderCreateRequest"
+                },
+                "examples": {
+                    "BasicActivation": {
+                      "summary": "Activation",
+                      "value": {
+                        "accountDetails": {
+                          "lineActivationDetails": [
+                            {
+                              "productType": "GSM",
+                              "device": {
+                                "eid": "89049032000000000000000000000001"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "ActivationWithPortIn": {
+                      "summary": "Activation with Port-In details",
+                      "value": {
+                        "accountDetails": {
+                          "lineActivationDetails": [
+                            {
+                              "productType": "GSM",
+                              "device": {
+                                "eid": "89049032000000000000000000000002"
+                              },
+                              "portInLineDetail": {
+                                "numberToPort": "1234567890",
+                                "businessName": "Acme Corp",
+                                "authorizationName": "John Doe",
+                                "originalAccountNum": "ACC123456",
+                                "originalAccountPasswordPin": "1234"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "ActivationWithPPU": {
+                      "summary": "Activation with PPU address",
+                      "value": {
+                        "accountDetails": {
+                          "lineActivationDetails": [
+                            {
+                              "productType": "GSM",
+                              "device": {
+                                "eid": "89049032000000000000000000000003"
+                              },
+                              "addressUse": "e911",
+                              "lineAddress": {
+                                "address1": "123 Main St",
+                                "city": "Seattle",
+                                "state": "WA",
+                                "zipCode": "98101",
+                                "addressClassification": "individual",
+                                "addressType": "PPU"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Order created successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/OrderCreateResponse"
+                  }
+                }
+              },
+              "headers": {
+                "Date": {
+                  "description": "The Date general HTTP header contains the date and time at which the message was originated.",
+                  "schema": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), [0-3]{1}[0-9]{1} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [1-3][0-9]{3} [0-2][0-9]:[0-6][0-9]:[0-6][0-9] GMT$"
+                  },
+                  "example": "Mon, 05 Mar 2018 16:38:08 GMT"
+                },
+                "ETag": {
+                  "description": "The ETag header specifies the unique entity tag value for the returned resource.",
+                  "schema": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256,
+                    "pattern": "^[\\S]*$"
+                  },
+                  "example": "*"
+                },
+                "Location": {
+                  "description": "The Location header specifies the URI of a created resource, or redirects the API consumer to an alternate resource location.",
+                  "schema": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 65536,
+                    "pattern": "^[\\S]*$"
+                  },
+                  "example": "http://api.t-mo.com/order-mgmt/v1/orders/123xyz-0/status"
+                },
+                "Transfer-Encoding": {
+                  "description": "The form of encoding used to safely transfer the entity to the user. Currently defined methods are: chunked, compress, deflate, gzip, identity.",
+                  "schema": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 15,
+                    "pattern": "^[\\S]*$"
+                  },
+                  "example": "chunked"
+                },
+                "service-transaction-id": {
+                  "description": "Request ID echoed back by server",
+                  "schema": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256,
+                    "pattern": "^[\\S]*$"
+                  },
+                  "example": "23409209723"
+                }
+              }
+            },
+            "400": {
+                "description": "Invalid request payload or business rule violation",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    },
+                    "examples": {
+                      "MissingProductType": {
+                        "summary": "Missing required productType field",
+                        "value": {
+                          "code": "MissingField",
+                          "userMessage": "The field 'productType' is required.",
+                          "systemMessage": "Validation failed for field: productType",
+                          "detailLink": "https://api.t-mobile.com/order-managment-errors/1001"
+                        }
+                      },
+                      "InvalidEID": {
+                        "summary": "Invalid EID format",
+                        "value": {
+                          "code": "InvalidFormat",
+                          "userMessage": "EID must be a 32-digit numeric string.",
+                          "systemMessage": "EID format mismatch",
+                          "detailLink": "https://api.t-mobile.com/order-managment-errors/1002"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "401": {
+                "description": "Unauthorized - Access token is missing or invalid",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    },
+                    "example": {
+                      "code": "Unauthorized",
+                      "userMessage": "Authentication required. Please provide a valid token.",
+                      "systemMessage": "Missing or invalid Bearer token.",
+                      "detailLink": "https://api.t-mobile.com/order-managment-errors/401"
+                    }
+                  }
+                }
+              },
+              "403": {
+                "description": "Forbidden - Caller does not have permission to access this resource",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    },
+                    "example": {
+                      "code": "Forbidden",
+                      "userMessage": "You are not authorized to perform this action.",
+                      "systemMessage": "Access denied based on API permissions.",
+                      "detailLink": "https://api.t-mobile.com/order-managment-errors/403"
+                    }
+                  }
+                }
+              },
+              "404": {
+                "description": "Not Found - Resource could not be found",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    },
+                    "example": {
+                      "code": "OrderNotFound",
+                      "userMessage": "The requested order does not exist.",
+                      "systemMessage": "No resource found with the given order ID.",
+                      "detailLink": "https://api.t-mobile.com/order-managment-errors/404"
+                    }
+                  }
+                }
+              },
+              "500": {
+                "description": "Internal Server Error - Unexpected server-side failure",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    },
+                    "example": {
+                      "code": "InternalServerError",
+                      "userMessage": "Something went wrong. Please try again later.",
+                      "systemMessage": "500 Internal Server Error",
+                      "detailLink": "https://api.t-mobile.com/order-managment-errors/500"
+                    }
+                  }
+                }
+              },
+              "503": {
+                "description": "Service Unavailable - The server is currently unable to handle the request",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    },
+                    "example": {
+                      "code": "ServiceUnavailable",
+                      "userMessage": "The service is temporarily unavailable. Please try again later.",
+                      "systemMessage": "503 Service Unavailable",
+                      "detailLink": "https://api.t-mobile.com/order-managment-errors/503"
+                    }
+                  }
+                }
+              }
+            },
+          "parameters": [
+            {
+              "name": "Access-Control-Request-Headers",
+              "in": "header",
+              "description": "For CORS pre-flight OPTIONS requests sent by a browser, headers to be used.",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S ]*$"
+              },
+              "example": "Authorization, Content-Type"
+            },
+            {
+              "name": "Access-Control-Request-Method",
+              "in": "header",
+              "description": "In CORS, indicates which method will be used in the actual request as part of a preflight request.",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "GET",
+                  "HEAD",
+                  "POST",
+                  "PUT",
+                  "DELETE",
+                  "CONNECT",
+                  "OPTIONS",
+                  "TRACE"
+                ],
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S]*$"
+              },
+              "example": "POST"
+            },
+            {
+              "name": "activity-id",
+              "in": "header",
+              "description": "Unique ID generated and sent by the partner to identify the service request",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S]*$"
+              },
+              "example": "c34e7acd-384b-4c22-8b02-ba3963682508"
+            },
+            {
+              "name": "interaction-id",
+              "in": "header",
+              "description": "Transaction ID across all calls made from UI for a business activity",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S]*$"
+              },
+              "example": "cc688d54-50d1-49d4-8c5d-95459d1172e8"
+            },
+            {
+              "name": "service-transaction-id",
+              "in": "header",
+              "description": "Request ID echoed back by server",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S]*$"
+              },
+              "example": "23409209723"
+            },
+            {
+              "name": "session-id",
+              "in": "header",
+              "description": "Tracks the transactions during a session",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S]*$"
+              },
+              "example": "350b91ec-4a64-4b10-a3f3-a78c8db3924a"
+            },
+            {
+              "name": "timestamp",
+              "in": "header",
+              "description": "ms since 1/1/70 adjusted to GMT",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0,
+                "maximum": 999999999999,
+                "pattern": "^[\\d]*$"
+              },
+              "example": 1524599536
+            },
+            {
+              "name": "workflow-id",
+              "in": "header",
+              "description": "Business Use Case",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S]*$"
+              },
+              "example": "ACTIVATION"
+            },
+            {
+              "name": "x-auth-originator",
+              "in": "header",
+              "description": "API chain initiating caller's access token",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S]*$"
+              },
+              "example": "c34e7acd-384b-4c22-8b02-ba3963682508"
+            },
+            {
+              "name": "x-authorization",
+              "in": "header",
+              "description": "Proof of Possession token generated by API caller",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S ]*$"
+              },
+              "example": "c34e7acd-384b-4c22-8b02-ba3963682508"
+            }
+          ]
+        }
+      },
+      "/orders/{orderId}": {
+        "get": {
+          "tags": [
+            "queryOrder"
+          ],
+          "summary": "Get order status and line activation details by order ID",
+          "operationId": "order_activaton",
+          "parameters": [
+            {
+              "name": "orderId",
+              "in": "path",
+              "required": true,
+              "description": "The ID of the order to retrieve status for.",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "Access-Control-Request-Headers",
+              "in": "header",
+              "description": "For CORS pre-flight OPTIONS requests sent by a browser, headers to be used.",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S ]*$"
+              },
+              "example": "Authorization, Content-Type"
+            },
+            {
+              "name": "Access-Control-Request-Method",
+              "in": "header",
+              "description": "In CORS, indicates which method will be used in the actual request as part of a preflight request.",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "GET",
+                  "HEAD",
+                  "POST",
+                  "PUT",
+                  "DELETE",
+                  "CONNECT",
+                  "OPTIONS",
+                  "TRACE"
+                ],
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S]*$"
+              },
+              "example": "POST"
+            },
+            {
+              "name": "activity-id",
+              "in": "header",
+              "description": "Unique ID generated and sent by the partner to identify the service request",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S]*$"
+              },
+              "example": "c34e7acd-384b-4c22-8b02-ba3963682508"
+            },
+            {
+              "name": "interaction-id",
+              "in": "header",
+              "description": "Transaction ID across all calls made from UI for a business activity",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S]*$"
+              },
+              "example": "cc688d54-50d1-49d4-8c5d-95459d1172e8"
+            },
+            {
+              "name": "service-transaction-id",
+              "in": "header",
+              "description": "Request ID echoed back by server",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S]*$"
+              },
+              "example": "23409209723"
+            },
+            {
+              "name": "session-id",
+              "in": "header",
+              "description": "Tracks the transactions during a session",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S]*$"
+              },
+              "example": "350b91ec-4a64-4b10-a3f3-a78c8db3924a"
+            },
+            {
+              "name": "timestamp",
+              "in": "header",
+              "description": "ms since 1/1/70 adjusted to GMT",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0,
+                "maximum": 999999999999,
+                "pattern": "^[\\d]*$"
+              },
+              "example": 1524599536
+            },
+            {
+              "name": "workflow-id",
+              "in": "header",
+              "description": "Business Use Case",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S]*$"
+              },
+              "example": "ACTIVATION"
+            },
+            {
+              "name": "x-auth-originator",
+              "in": "header",
+              "description": "API chain initiating caller's access token",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S]*$"
+              },
+              "example": "c34e7acd-384b-4c22-8b02-ba3963682508"
+            },
+            {
+              "name": "x-authorization",
+              "in": "header",
+              "description": "Proof of Possession token generated by API caller",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[\\S ]*$"
+              },
+              "example": "c34e7acd-384b-4c22-8b02-ba3963682508"
+            },
+            {
+              "name": "pageNumber",
+              "in": "query",
+              "required": false,
+              "description": "Page number of the results to fetch",
+              "schema": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "example": 1
+            },
+            {
+              "name": "pageSize",
+              "in": "query",
+              "required": false,
+              "description": "Number of records to return per page",
+              "schema": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "example": 20
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Order status and activation details retrieved successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/OrderStatusResponse"
+                  }
+                }
+              },
+              "headers": {
+                "Date": {
+                  "description": "The Date general HTTP header contains the date and time at which the message was originated.",
+                  "schema": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), [0-3]{1}[0-9]{1} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [1-3][0-9]{3} [0-2][0-9]:[0-6][0-9]:[0-6][0-9] GMT$"
+                  },
+                  "example": "Mon, 05 Mar 2018 16:38:08 GMT"
+                },
+                "ETag": {
+                  "description": "The ETag header specifies the unique entity tag value for the returned resource.",
+                  "schema": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256,
+                    "pattern": "^[\\S]*$"
+                  },
+                  "example": "*"
+                },
+                "Location": {
+                  "description": "The Location header specifies the URI of a created resource, or redirects the API consumer to an alternate resource location.",
+                  "schema": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 65536,
+                    "pattern": "^[\\S]*$"
+                  },
+                  "example": "http://api.t-mo.com/order-mgmt/v1/orders/123xyz-0/status"
+                },
+                "Transfer-Encoding": {
+                  "description": "The form of encoding used to safely transfer the entity to the user. Currently defined methods are: chunked, compress, deflate, gzip, identity.",
+                  "schema": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 15,
+                    "pattern": "^[\\S]*$"
+                  },
+                  "example": "chunked"
+                },
+                "service-transaction-id": {
+                  "description": "Request ID echoed back by server",
+                  "schema": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256,
+                    "pattern": "^[\\S]*$"
+                  },
+                  "example": "23409209723"
+                }
+              }
+            },
+            "400": {
+                "description": "Bad Request - Invalid order ID or missing required parameters",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    },
+                    "example": {
+                      "code": "InvalidOrderId",
+                      "userMessage": "The order ID format is invalid.",
+                      "systemMessage": "Provided order ID does not match expected pattern.",
+                      "detailLink": "https://api.t-mobile.com/order-managment-errors/400"
+                    }
+                  }
+                }
+              },
+              "401": {
+                "description": "Unauthorized - Access token is missing or invalid",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    },
+                    "example": {
+                      "code": "Unauthorized",
+                      "userMessage": "Authentication required. Please provide a valid token.",
+                      "systemMessage": "Missing or invalid Bearer token.",
+                      "detailLink": "https://api.t-mobile.com/order-managment-errors/401"
+                    }
+                  }
+                }
+              },
+              "403": {
+                "description": "Forbidden - Caller does not have permission to access this order",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    },
+                    "example": {
+                      "code": "Forbidden",
+                      "userMessage": "You are not authorized to view this order.",
+                      "systemMessage": "Access denied based on order ownership or permissions.",
+                      "detailLink": "https://api.t-mobile.com/order-managment-errors/403"
+                    }
+                  }
+                }
+              },
+              "404": {
+                "description": "Not Found - Order with the given ID does not exist",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    },
+                    "example": {
+                      "code": "OrderNotFound",
+                      "userMessage": "The requested order could not be found.",
+                      "systemMessage": "No order found with the provided order ID.",
+                      "detailLink": "https://api.t-mobile.com/order-managment-errors/404"
+                    }
+                  }
+                }
+              },
+              "500": {
+                "description": "Internal Server Error - Unexpected server-side issue",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    },
+                    "example": {
+                      "code": "InternalServerError",
+                      "userMessage": "An unexpected error occurred. Please try again later.",
+                      "systemMessage": "500 Internal Server Error",
+                      "detailLink": "https://api.t-mobile.com/order-managment-errors/500"
+                    }
+                  }
+                }
+              },
+              "503": {
+                "description": "Service Unavailable - Server is temporarily unable to handle the request",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    },
+                    "example": {
+                      "code": "ServiceUnavailable",
+                      "userMessage": "The service is currently unavailable. Please try again later.",
+                      "systemMessage": "503 Service Unavailable",
+                      "detailLink": "https://api.t-mobile.com/order-managment-errors/503"
+                    }
+                  }
+                }
+              }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "OrderCreateRequest": {
+          "type": "object",
+          "properties": {
+            "accountDetails": {
+              "type": "object",
+              "properties": {
+                "lineActivationDetails": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "lineAddress": {
+                        "$ref": "#/components/schemas/Address"
+                      },
+                      "productType": {
+                        "type": "string",
+                        "example": "GSM"
+                      },
+                      "portInLineDetail": {
+                        "type": "object",
+                        "properties": {
+                          "numberToPort": {
+                            "type": "string"
+                          },
+                          "businessName": {
+                            "type": "string"
+                          },
+                          "authorizationName": {
+                            "type": "string"
+                          },
+                          "originalAccountNum": {
+                            "type": "string"
+                          },
+                          "originalAccountPasswordPin": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "addressUse": {
+                        "type": "string",
+                        "description": "Purpose of the address (e.g., e911, PPU)",
+                        "enum": [
+                          "e911",
+                          "PPU"
+                        ],
+                        "example": "e911"
+                      },
+                      "device": {
+                        "type": "object",
+                        "properties": {
+                          "eid": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "description": "Account-level details related to the order"
+            }
+          }
+        },
+        "Address": {
+          "type": "object",
+          "properties": {
+            "addressClassification": {
+              "type": "string"
+            },
+            "address1": {
+              "type": "string"
+            },
+            "address2": {
+              "type": "string",
+              "nullable": true
+            },
+            "city": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string"
+            },
+            "zipCode": {
+              "type": "string"
+            },
+            "attention": {
+              "type": "string"
+            },
+            "addressType": {
+              "type": "string"
+            }
+          }
+        },
+        "OrderCreateResponse": {
+          "type": "object",
+          "properties": {
+            "orderId": {
+              "type": "string",
+              "example": "ORD12345678"
+            },
+            "orderStatus": {
+              "type": "string",
+              "example": "Order Received"
+            }
+          }
+        },
+        "ErrorResponse": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "example": "ProductNotFound"
+            },
+            "userMessage": {
+              "type": "string",
+              "example": "Product with the SKU 80275D could not be found"
+            },
+            "systemMessage": {
+              "type": "string",
+              "example": "404 Not Found"
+            },
+            "detailLink": {
+              "type": "string",
+              "format": "uri",
+              "example": "https://api.t-mobile.com/order-managment-errors/21b7c4d3"
+            }
+          }
+        },
+        "OrderStatusResponse": {
+          "type": "object",
+          "properties": {
+            "orderId": {
+              "type": "string",
+              "example": "ORD12345678"
+            },
+            "orderStatus": {
+              "type": "object",
+              "properties": {
+                "statusCode": {
+                  "type": "string",
+                  "description": "Machine-readable status code of the order"
+                },
+                "statusMessage": {
+                  "type": "string",
+                  "description": "Human-readable description of the order status"
+                }
+              }
+            },
+            "billingAccountNumber": {
+              "type": "string",
+              "example": "BAN987654321"
+            },
+            "pagination": {
+              "type": "object",
+              "properties": {
+                "totalRecords": {
+                  "type": "integer",
+                  "example": 100
+                },
+                "pageSize": {
+                  "type": "integer",
+                  "example": 20
+                },
+                "pageNumber": {
+                  "type": "integer",
+                  "example": 1
+                },
+                "totalPages": {
+                  "type": "integer",
+                  "example": 5
+                }
+              }
+            },
+            "orderLineItems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "phoneNumber": {
+                    "type": "string",
+                    "description": "Activated phone number for the line"
+                  },
+                  "ratePlan": {
+                    "type": "string",
+                    "description": "Rate plan assigned to the line"
+                  },
+                  "activationDate": {
+                    "type": "string",
+                    "description": "Date when the line was activated"
+                  },
+                  "lineItemStatus": {
+                    "type": "object",
+                    "properties": {
+                      "statusCode": {
+                        "type": "string",
+                        "description": "Machine-readable status of line item"
+                      },
+                      "statusMessage": {
+                        "type": "string",
+                        "description": "Description of the current status of line item"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "BearerAuth": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    },
+    "security": [
+      {
+        "BearerAuth": []
+      }
+    ]
+  }
